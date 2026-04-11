@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>배송 공유</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f3ef;
+  --surface: #fff;
+  --border: #e3e1d9;
+  --text: #1a1917;
+  --muted: #7a7870;
+  --accent: #2d6a4f;
+  --accent-light: #e8f5ee;
+  --done-bg: #2d6a4f; --done-fg: #fff;
+  --during-bg: #e8f5ee; --during-fg: #1b4332;
+  --before-bg: #f0ede6; --before-fg: #5c5a54;
+  --danger: #991b1b;
+  --r: 12px; --rs: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.logo { font-size: 16px; font-weight: 700; letter-spacing: -.5px; cursor: pointer; }
+.logo span { color: var(--accent); }
+.hbtn { font-size: 13px; background: none; border: 1px solid var(--border); border-radius: var(--rs); padding: 6px 13px; cursor: pointer; color: var(--muted); font-family: inherit; transition: all .15s; }
+.hbtn:hover { border-color: var(--text); color: var(--text); }
+
+.page { display: none; max-width: 640px; margin: 0 auto; padding: 36px 16px; }
+.page.active { display: block; }
+
+/* 메인 */
+.hero { text-align: center; padding: 60px 0 40px; }
+.hero h1 { font-size: 26px; font-weight: 700; letter-spacing: -.5px; margin-bottom: 10px; }
+.hero p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
+.hero-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-p { padding: 11px 28px; background: var(--accent); color: #fff; border: none; border-radius: var(--rs); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity .15s; }
+.btn-p:hover { opacity: .85; }
+.btn-o { padding: 11px 28px; background: none; color: var(--text); border: 1px solid var(--border); border-radius: var(--rs); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s; }
+.btn-o:hover { border-color: var(--accent); color: var(--accent); }
+.feat-cards { margin-top: 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.feat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 16px; text-align: center; }
+.feat-card .ic { font-size: 26px; margin-bottom: 8px; }
+.feat-card h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.feat-card p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* 폼 */
+.fcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 24px 20px; margin-bottom: 16px; }
+.fcard h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.fcard .sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.field input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--rs); font-family: inherit; font-size: 14px; background: var(--bg); color: var(--text); outline: none; transition: border-color .15s; }
+.field input:focus { border-color: var(--accent); }
+.ferr { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+.fhint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.full-btn { width: 100%; padding: 11px; margin-top: 6px; }
+.urlbox { background: var(--bg); border: 1px solid var(--border); border-radius: var(--rs); padding: 12px 14px; font-size: 13px; word-break: break-all; color: var(--accent); margin-bottom: 10px; cursor: pointer; }
+.urlbox:hover { background: var(--accent-light); }
+.copyhint { font-size: 12px; color: var(--muted); text-align: center; }
+
+/* 잠금 */
+.lockwrap { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.lockcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 28px 22px; width: 100%; max-width: 320px; }
+.lockcard h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.lockcard .sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+.lockerr { font-size: 13px; color: var(--danger); margin-top: 10px; text-align: center; display: none; }
+
+/* 방 내부 */
+.room-title { font-size: 19px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 2px; }
+.room-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+.sharebar { background: var(--accent-light); border: 1px solid #b7e0cb; border-radius: var(--rs); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 20px; cursor: pointer; }
+.sharebar:hover { opacity: .85; }
+.share-label { font-size: 13px; color: var(--accent); font-weight: 500; }
+.share-url { font-size: 11px; color: var(--accent); opacity: .7; word-break: break-all; margin-top: 2px; }
+
+/* 닉네임 설정 배너 */
+.nick-banner { background: #fef3c7; border: 1px solid #fcd34d; border-radius: var(--rs); padding: 12px 14px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+.nick-banner span { font-size: 13px; color: #78350f; flex: 1; }
+.nick-banner button { font-size: 12px; background: #f59e0b; color: #fff; border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; white-space: nowrap; font-family: inherit; font-weight: 500; }
+
+/* 닉네임 입력 팝업 */
+.nick-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.32); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+.nick-modal-overlay.open { display: flex; }
+.nick-modal { background: var(--surface); border-radius: var(--r); padding: 24px 20px; width: 100%; max-width: 300px; }
+.nick-modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.nick-modal p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.nick-modal input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--rs); font-family: inherit; font-size: 14px; background: var(--bg); color: var(--text); outline: none; margin-bottom: 6px; }
+.nick-modal input:focus { border-color: var(--accent); }
+.nick-ferr { font-size: 12px; color: var(--danger); margin-bottom: 10px; display: none; }
+.nick-btns { display: flex; gap: 8px; }
+.nick-btns button { flex: 1; padding: 10px; border-radius: var(--rs); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: none; transition: all .15s; }
+.nick-btns .nbtn-p { background: var(--accent); color: #fff; border-color: var(--accent); }
+.nick-btns .nbtn-p:hover { opacity: .85; }
+
+/* 송장 추가 패널 */
+#addSection { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 18px; }
+#addSection h3 { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 12px; }
+.addrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.addrow input { font-family: inherit; font-size: 14px; padding: 9px 11px; border: 1px solid var(--border); border-radius: var(--rs); background: var(--bg); color: var(--text); outline: none; transition: border-color .15s; }
+.addrow input:focus { border-color: var(--accent); }
+.fi-name { flex: 1; min-width: 110px; }
+.fi-seller { flex: 1; min-width: 100px; }
+.fi-track { flex: 1.2; min-width: 130px; }
+.addbtn { padding: 9px 16px; background: var(--accent); color: #fff; border: none; border-radius: var(--rs); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.addbtn:hover { opacity: .85; }
+
+/* 목록 */
+.listhd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.ltitle { font-size: 14px; font-weight: 500; }
+.cnt { font-size: 12px; background: var(--accent-light); color: var(--accent); padding: 3px 10px; border-radius: 20px; font-weight: 500; margin-left: 6px; }
+.refbtn { font-size: 13px; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: var(--rs); padding: 5px 11px; cursor: pointer; font-family: inherit; transition: all .15s; }
+.refbtn:hover { border-color: var(--accent); color: var(--accent); }
+#orderList { display: flex; flex-direction: column; gap: 9px; }
+
+.ocard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 16px; display: flex; align-items: center; gap: 12px; animation: fadeIn .22s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.oi { flex: 1; min-width: 0; }
+.oname { font-size: 15px; font-weight: 500; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ometa { font-size: 12px; color: var(--muted); margin-bottom: 7px; }
+.steps { display: flex; align-items: center; }
+.sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.sline { flex: 1; height: 2px; background: var(--border); }
+.sdot.on { background: var(--accent); }
+.sline.on { background: var(--accent); }
+.pill { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 5px 11px; border-radius: 20px; white-space: nowrap; }
+.p-before { background: var(--before-bg); color: var(--before-fg); }
+.p-during { background: var(--during-bg); color: var(--during-fg); }
+.p-done   { background: var(--done-bg);   color: var(--done-fg); }
+.delbtn { flex-shrink: 0; background: none; border: none; cursor: pointer; color: #ccc; font-size: 20px; padding: 0 3px; line-height: 1; border-radius: 4px; transition: color .15s; }
+.delbtn:hover { color: var(--danger); }
+
+.empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; background: var(--surface); border: 1px dashed var(--border); border-radius: var(--r); }
+.empty-ic { font-size: 32px; margin-bottom: 10px; }
+
+.spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(0,0,0,.12); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px; }
+.p-done .spinner { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text); color: #fff; padding: 10px 20px; border-radius: 24px; font-size: 13px; font-weight: 500; transition: transform .28s ease; z-index: 300; pointer-events: none; white-space: nowrap; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 480px) {
+  .addrow { flex-direction: column; }
+  .addbtn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="goMain()">배송 <span>공유</span></div>
+  <div id="headerRight">
+    <button class="hbtn" onclick="showPage('pageCreate')">방 만들기</button>
+  </div>
+</header>
+
+<!-- 메인 -->
+<div class="page active" id="pageMain">
+  <div class="hero">
+    <h1>📦 내 배송, 간편하게 공유</h1>
+    <p>공동구매 송장을 비밀번호로 보호된 링크로 공유하세요.<br>주소지 노출 없이 배송 상태만 안전하게 확인할 수 있어요.</p>
+    <div class="hero-btns">
+      <button class="btn-p" onclick="showPage('pageCreate')">공유방 만들기</button>
+      <button class="btn-o" onclick="showPage('pageJoin')">링크로 접속하기</button>
+    </div>
+  </div>
+  <div class="feat-cards">
+    <div class="feat-card"><div class="ic">🔐</div><h3>비밀번호 보호</h3><p>링크를 알아도 비밀번호 없이는 볼 수 없어요</p></div>
+    <div class="feat-card"><div class="ic">🙈</div><h3>주소 비공개</h3><p>배송 전·중·완료와 판매처만 표시돼요</p></div>
+    <div class="feat-card"><div class="ic">👥</div><h3>함께 추가</h3><p>방 안 모두가 본인 송장을 직접 추가할 수 있어요</p></div>
+  </div>
+</div>
+
+<!-- 방 만들기 -->
+<div class="page" id="pageCreate">
+  <div class="fcard">
+    <h2>공유방 만들기</h2>
+    <p class="sub">방 이름과 비밀번호를 설정하면 공유 링크가 생성돼요</p>
+    <div class="field">
+      <label>방 이름 (한글·영문·숫자, 최대 12자)</label>
+      <input type="text" id="cRoomName" placeholder="예: 3월공구, 봄공구, abc" maxlength="12" />
+      <div class="ferr" id="cNameErr"></div>
+    </div>
+    <div class="field">
+      <label>비밀번호 (영문+숫자, 4~8자)</label>
+      <input type="password" id="cPw" placeholder="예: shop1234" maxlength="8" />
+      <div class="fhint">친구들에게 이 비밀번호를 알려주세요</div>
+      <div class="ferr" id="cPwErr"></div>
+    </div>
+    <button class="btn-p full-btn" onclick="createRoom()">방 만들기</button>
+  </div>
+  <div class="fcard" id="createdBox" style="display:none;">
+    <h2>✅ 공유방이 만들어졌어요!</h2>
+    <p class="sub">아래 링크를 복사해서 친구들에게 공유하세요</p>
+    <div class="urlbox" id="createdUrl" onclick="copyCreatedUrl()"></div>
+    <p class="copyhint">👆 탭하면 복사돼요 · 비밀번호도 함께 알려주세요</p>
+  </div>
+</div>
+
+<!-- 링크로 접속 -->
+<div class="page" id="pageJoin">
+  <div class="fcard">
+    <h2>링크로 접속하기</h2>
+    <p class="sub">방 이름과 비밀번호를 입력하세요</p>
+    <div class="field">
+      <label>방 이름</label>
+      <input type="text" id="jRoomName" placeholder="방 이름" maxlength="12" />
+    </div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="jPw" placeholder="비밀번호" maxlength="8"
+        onkeydown="if(event.key==='Enter')joinRoom()" />
+    </div>
+    <div class="ferr" id="jErr" style="display:none; margin-bottom:8px;"></div>
+    <button class="btn-p full-btn" onclick="joinRoom()">입장하기</button>
+  </div>
+</div>
+
+<!-- 잠금 화면 -->
+<div class="page" id="pageLock">
+  <div class="lockwrap">
+    <div class="lockcard">
+      <h2>🔐 비밀번호 입력</h2>
+      <p class="sub" id="lockSub">이 공유방은 비밀번호로 보호돼 있어요</p>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="lockPw" placeholder="비밀번호" maxlength="8"
+          onkeydown="if(event.key==='Enter')submitLock()" />
+      </div>
+      <button class="btn-p full-btn" onclick="submitLock()">확인</button>
+      <div class="lockerr" id="lockErr">비밀번호가 틀렸어요. 메인으로 이동합니다...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 방 내부 -->
+<div class="page" id="pageRoom">
+  <div class="room-title" id="roomTitle"></div>
+  <div class="room-sub" id="roomSub">배송 현황</div>
+
+  <div class="sharebar" onclick="copyRoomUrl()">
+    <div>
+      <div class="share-label">🔗 친구들에게 이 링크를 공유하세요</div>
+      <div class="share-url" id="shareUrlText"></div>
+    </div>
+    <span style="font-size:18px; flex-shrink:0;">📋</span>
+  </div>
+
+  <!-- 닉네임 미설정 시 안내 -->
+  <div class="nick-banner" id="nickBanner" style="display:none;">
+    <span>✏️ 닉네임을 설정하면 내 송장을 추가할 수 있어요</span>
+    <button onclick="openNickModal()">닉네임 설정</button>
+  </div>
+
+  <!-- 송장 추가 패널 (닉네임 있으면 표시) -->
+  <div id="addSection" style="display:none;">
+    <h3 id="addSectionTitle">내 송장 추가</h3>
+    <div class="addrow">
+      <input type="text" class="fi-name" id="inputName" placeholder="주문 이름" />
+      <input type="text" class="fi-seller" id="inputSeller" placeholder="판매처 (선택)" />
+      <input type="text" class="fi-track" id="inputTrack" placeholder="운송장 번호" maxlength="14" inputmode="numeric" />
+      <button class="addbtn" onclick="addOrder()">+ 추가</button>
+    </div>
+  </div>
+
+  <div class="listhd">
+    <span class="ltitle">배송 목록 <span class="cnt" id="cntBadge">0</span></span>
+    <button class="refbtn" onclick="refreshAll()">새로고침</button>
+  </div>
+  <div id="orderList">
+    <div class="empty"><div class="empty-ic">📭</div>불러오는 중...</div>
+  </div>
+</div>
+
+<!-- 닉네임 설정 모달 -->
+<div class="nick-modal-overlay" id="nickModalOverlay">
+  <div class="nick-modal">
+    <h3>닉네임 설정</h3>
+    <p>방 안에서 사용할 닉네임을 입력하세요</p>
+    <input type="text" id="nickInput" placeholder="예: 홍길동, gildong" maxlength="10"
+      onkeydown="if(event.key==='Enter')saveNick()" />
+    <div class="nick-ferr" id="nickErr"></div>
+    <div class="nick-btns">
+      <button onclick="closeNickModal()">취소</button>
+      <button class="nbtn-p" onclick="saveNick()">설정하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBglu3qoZ3U_5d6RND_6Lx6XZgPWhmN6lY",
+  authDomain:        "caligo2.firebaseapp.com",
+  projectId:         "caligo2",
+  storageBucket:     "caligo2.firebasestorage.app",
+  messagingSenderId: "567781917671",
+  appId:             "1:567781917671:web:694635c7b88c10d490f342"
+};
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+let currentRoom = null;
+let myNick = null;      // 이 방에서의 내 닉네임 (세션 기반)
+let orders = [];
+let pendingRoomId = null;
+
+// ── 입력 필터 ──────────────────────────────
+function filterRoomName(el) {
+  var filtered = '';
+  for (var i = 0; i < el.value.length; i++) {
+    var c = el.value.charCodeAt(i);
+    if ((c >= 0xAC00 && c <= 0xD7A3) || (c >= 0x3131 && c <= 0x314E) ||
+        (c >= 0x314F && c <= 0x3163) || (c >= 65 && c <= 90) ||
+        (c >= 97 && c <= 122) || (c >= 48 && c <= 57)) {
+      filtered += el.value[i];
+    }
+  }
+  if (filtered !== el.value) el.value = filtered;
+}
+function filterPw(el) { el.value = el.value.replace(/[^a-zA-Z0-9]/g, ''); }
+function filterNick(el) {
+  var filtered = '';
+  for (var i = 0; i < el.value.length; i++) {
+    var c = el.value.charCodeAt(i);
+    if ((c >= 0xAC00 && c <= 0xD7A3) || (c >= 0x3131 && c <= 0x314E) ||
+        (c >= 0x314F && c <= 0x3163) || (c >= 65 && c <= 90) ||
+        (c >= 97 && c <= 122) || (c >= 48 && c <= 57)) {
+      filtered += el.value[i];
+    }
+  }
+  if (filtered !== el.value) el.value = filtered;
+}
+
+document.getElementById('cRoomName').addEventListener('input', function() { filterRoomName(this); });
+document.getElementById('jRoomName').addEventListener('input', function() { filterRoomName(this); });
+document.getElementById('cPw').addEventListener('input', function() { filterPw(this); });
+document.getElementById('jPw').addEventListener('input', function() { filterPw(this); });
+document.getElementById('lockPw').addEventListener('input', function() { filterPw(this); });
+document.getElementById('nickInput').addEventListener('input', function() { filterNick(this); });
+
+// ── 초기화 ────────────────────────────────
+function init() {
+  var hash = location.hash.replace('#', '');
+  if (hash) {
+    pendingRoomId = decodeURIComponent(hash);
+    document.getElementById('lockSub').textContent = '"' + pendingRoomId + '" 공유방에 입장하려면 비밀번호를 입력하세요';
+    showPage('pageLock');
+    setTimeout(function() { document.getElementById('lockPw').focus(); }, 100);
+  } else {
+    showPage('pageMain');
+  }
+  renderHeader();
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goMain() {
+  currentRoom = null; myNick = null; orders = [];
+  history.replaceState(null, '', location.pathname);
+  showPage('pageMain');
+  renderHeader();
+}
+
+function renderHeader() {
+  var el = document.getElementById('headerRight');
+  if (currentRoom) {
+    var nickLabel = myNick ? '<span style="font-size:13px;color:var(--accent);background:var(--accent-light);padding:5px 10px;border-radius:20px;margin-right:6px;">' + esc(myNick) + '</span>' : '';
+    el.innerHTML = nickLabel + '<button class="hbtn" onclick="goMain()">나가기</button>';
+  } else {
+    el.innerHTML = '<button class="hbtn" onclick="showPage(\'pageCreate\')">방 만들기</button>';
+  }
+}
+
+// ── URL ───────────────────────────────────
+function makeUrl(roomId) {
+  return location.origin + location.pathname + '#' + encodeURIComponent(roomId);
+}
+function copyCreatedUrl() {
+  navigator.clipboard.writeText(document.getElementById('createdUrl').textContent)
+    .then(function() { toast('링크가 복사됐어요!'); });
+}
+function copyRoomUrl() {
+  navigator.clipboard.writeText(makeUrl(currentRoom.id))
+    .then(function() { toast('링크가 복사됐어요!'); });
+}
+
+// ── 방 만들기 ─────────────────────────────
+async function createRoom() {
+  var name = document.getElementById('cRoomName').value.trim();
+  var pw = document.getElementById('cPw').value;
+  document.getElementById('cNameErr').style.display = 'none';
+  document.getElementById('cPwErr').style.display = 'none';
+
+  if (!name) { showErr('cNameErr', '방 이름을 입력해주세요'); return; }
+  if (name.length > 12) { showErr('cNameErr', '최대 12자까지 입력 가능해요'); return; }
+  if (!/^[a-zA-Z0-9]{4,8}$/.test(pw)) { showErr('cPwErr', '영문+숫자 4~8자로 입력해주세요'); return; }
+
+  try {
+    var snap = await db.collection('rooms').doc(name).get();
+    if (snap.exists) { showErr('cNameErr', '이미 있는 방 이름이에요. 다른 이름을 사용해주세요'); return; }
+
+    await db.collection('rooms').doc(name).set({
+      name: name, pw: pw,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    var url = makeUrl(name);
+    document.getElementById('createdUrl').textContent = url;
+    document.getElementById('createdBox').style.display = 'block';
+
+    history.replaceState(null, '', location.pathname + '#' + encodeURIComponent(name));
+    currentRoom = { id: name };
+
+    // 방장은 닉네임 설정 후 입장
+    document.getElementById('roomTitle').textContent = '📦 ' + name;
+    document.getElementById('shareUrlText').textContent = url;
+    renderHeader();
+    showPage('pageRoom');
+    loadOrders();
+    updateAddPanel();
+    toast('방이 만들어졌어요! 링크를 공유하세요 🎉');
+  } catch(e) { toast('오류가 발생했어요. 다시 시도해주세요.'); }
+}
+
+// ── 직접 접속 ─────────────────────────────
+async function joinRoom() {
+  var name = document.getElementById('jRoomName').value.trim();
+  var pw = document.getElementById('jPw').value;
+  var errEl = document.getElementById('jErr');
+  errEl.style.display = 'none';
+
+  if (!name || !pw) { errEl.textContent = '방 이름과 비밀번호를 모두 입력해주세요'; errEl.style.display = 'block'; return; }
+
+  var result = await verifyRoom(name, pw);
+  if (result === 'ok') { enterRoom(name); }
+  else if (result === 'wrong_pw') { errEl.textContent = '비밀번호가 틀렸어요'; errEl.style.display = 'block'; }
+  else { errEl.textContent = '존재하지 않는 방이에요'; errEl.style.display = 'block'; }
+}
+
+// ── 잠금 화면 ─────────────────────────────
+async function submitLock() {
+  var pw = document.getElementById('lockPw').value;
+  var errEl = document.getElementById('lockErr');
+  errEl.style.display = 'none';
+  if (!pw) return;
+
+  var result = await verifyRoom(pendingRoomId, pw);
+  if (result === 'ok') { enterRoom(pendingRoomId); }
+  else {
+    errEl.style.display = 'block';
+    setTimeout(function() { errEl.style.display = 'none'; goMain(); }, 2000);
+  }
+}
+
+async function verifyRoom(roomId, pw) {
+  try {
+    var snap = await db.collection('rooms').doc(roomId).get();
+    if (!snap.exists) return 'not_found';
+    return snap.data().pw === pw ? 'ok' : 'wrong_pw';
+  } catch(e) { return 'error'; }
+}
+
+function enterRoom(roomId) {
+  currentRoom = { id: roomId };
+  // 세션에서 닉네임 복원
+  myNick = sessionStorage.getItem('nick_' + roomId) || null;
+
+  history.replaceState(null, '', location.pathname + '#' + encodeURIComponent(roomId));
+  document.getElementById('roomTitle').textContent = '📦 ' + roomId;
+  document.getElementById('shareUrlText').textContent = makeUrl(roomId);
+  renderHeader();
+  updateAddPanel();
+  showPage('pageRoom');
+  loadOrders();
+}
+
+// ── 닉네임 패널 업데이트 ──────────────────
+function updateAddPanel() {
+  if (!currentRoom) return;
+  if (myNick) {
+    document.getElementById('nickBanner').style.display = 'none';
+    document.getElementById('addSection').style.display = 'block';
+    document.getElementById('addSectionTitle').textContent = esc(myNick) + '님의 송장 추가';
+  } else {
+    document.getElementById('nickBanner').style.display = 'flex';
+    document.getElementById('addSection').style.display = 'none';
+  }
+}
+
+// ── 닉네임 모달 ───────────────────────────
+function openNickModal() {
+  document.getElementById('nickModalOverlay').classList.add('open');
+  document.getElementById('nickInput').value = '';
+  document.getElementById('nickErr').style.display = 'none';
+  setTimeout(function() { document.getElementById('nickInput').focus(); }, 50);
+}
+function closeNickModal() {
+  document.getElementById('nickModalOverlay').classList.remove('open');
+}
+async function saveNick() {
+  var nick = document.getElementById('nickInput').value.trim();
+  var errEl = document.getElementById('nickErr');
+  errEl.style.display = 'none';
+
+  if (!nick) { errEl.textContent = '닉네임을 입력해주세요'; errEl.style.display = 'block'; return; }
+  if (nick.length > 10) { errEl.textContent = '10자 이하로 입력해주세요'; errEl.style.display = 'block'; return; }
+
+  myNick = nick;
+  sessionStorage.setItem('nick_' + currentRoom.id, nick);
+  closeNickModal();
+  updateAddPanel();
+  renderHeader();
+  toast(nick + '님, 환영해요! 이제 송장을 추가할 수 있어요 😊');
+}
+
+// ── 주문 목록 ─────────────────────────────
+async function loadOrders() {
+  document.getElementById('orderList').innerHTML = '<div class="empty"><div class="empty-ic">⏳</div>불러오는 중...</div>';
+  try {
+    var snap = await db.collection('rooms').doc(currentRoom.id)
+      .collection('orders').orderBy('createdAt', 'desc').get();
+    orders = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+    renderList();
+    refreshAll();
+  } catch(e) {
+    document.getElementById('orderList').innerHTML = '<div class="empty"><div class="empty-ic">❌</div>불러오지 못했어요</div>';
+  }
+}
+
+var LABEL = { before: '배송 전', during: '배송 중', done: '배송 완료' };
+var PILL  = { before: 'p-before', during: 'p-during', done: 'p-done' };
+
+function stepsHtml(s) {
+  var n = s === 'before' ? 0 : s === 'during' ? 1 : 2;
+  var d = function(i) { return '<div class="sdot' + (i <= n ? ' on' : '') + '"></div>'; };
+  var l = function(i) { return '<div class="sline' + (i < n ? ' on' : '') + '"></div>'; };
+  return '<div class="steps">' + d(0) + l(0) + d(1) + l(1) + d(2) + '</div>';
+}
+
+function renderCard(o) {
+  var s = o.status || 'before';
+  var sp = o.loading ? '<span class="spinner"></span>' : '';
+  // 닉네임 + 판매처 표시
+  var metaParts = [];
+  if (o.nick) metaParts.push(esc(o.nick));
+  if (o.seller) metaParts.push('판매처: ' + esc(o.seller));
+  var meta = metaParts.length ? '<div class="ometa">' + metaParts.join(' · ') + '</div>' : '<div style="height:4px;"></div>';
+  // 본인 것만 삭제 버튼
+  var del = (myNick && o.nick === myNick)
+    ? '<button class="delbtn" onclick="deleteOrder(\'' + o.id + '\')" title="삭제">×</button>' : '';
+  return '<div class="ocard" id="card-' + o.id + '">' +
+    '<div class="oi">' +
+      '<div class="oname">' + esc(o.name) + '</div>' +
+      meta +
+      stepsHtml(s) +
+    '</div>' +
+    '<span class="pill ' + PILL[s] + '">' + sp + LABEL[s] + '</span>' +
+    del +
+    '</div>';
+}
+
+function renderList() {
+  document.getElementById('cntBadge').textContent = orders.length;
+  var el = document.getElementById('orderList');
+  if (!orders.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ic">📭</div>아직 등록된 송장이 없어요</div>';
+    return;
+  }
+  el.innerHTML = orders.map(renderCard).join('');
+}
+
+async function fetchStatus(trackNum) {
+  try {
+    var r = await fetch('https://apis.tracker.delivery/carriers/kr.cjlogistics/tracks/' + trackNum);
+    if (!r.ok) return 'before';
+    var d = await r.json();
+    var ev = d.events || [];
+    if (!ev.length) return 'before';
+    var code = parseInt(((ev[ev.length - 1].status) || {}).code || '0');
+    if (code >= 91) return 'done';
+    if (code >= 30) return 'during';
+    return 'before';
+  } catch(e) { return 'before'; }
+}
+
+async function refreshAll() {
+  if (!orders.length) return;
+  document.getElementById('roomSub').textContent = '조회 중...';
+  orders = orders.map(function(o) { return Object.assign({}, o, { loading: true }); });
+  renderList();
+  orders = await Promise.all(orders.map(async function(o) {
+    var status = await fetchStatus(o.trackNum);
+    if (status !== o.status) {
+      try { await db.collection('rooms').doc(currentRoom.id).collection('orders').doc(o.id).update({ status: status }); } catch(e) {}
+    }
+    return Object.assign({}, o, { status: status, loading: false });
+  }));
+  renderList();
+  var now = new Date();
+  document.getElementById('roomSub').textContent =
+    '마지막 업데이트: ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+}
+
+async function addOrder() {
+  if (!myNick) { toast('닉네임을 먼저 설정해주세요'); return; }
+  var name = document.getElementById('inputName').value.trim();
+  var seller = document.getElementById('inputSeller').value.trim();
+  var track = document.getElementById('inputTrack').value.trim().replace(/\D/g, '');
+
+  if (!name) { toast('주문 이름을 입력해주세요'); return; }
+  if (!/^\d{10,14}$/.test(track)) { toast('운송장 번호를 확인해주세요 (10~14자리)'); return; }
+
+  try {
+    var doc = await db.collection('rooms').doc(currentRoom.id).collection('orders').add({
+      name: name, seller: seller, trackNum: track,
+      nick: myNick, status: 'before',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('inputName').value = '';
+    document.getElementById('inputSeller').value = '';
+    document.getElementById('inputTrack').value = '';
+
+    var o = { id: doc.id, name: name, seller: seller, trackNum: track, nick: myNick, status: 'before', loading: true };
+    orders.unshift(o);
+    renderList();
+    toast('추가됐어요!');
+
+    var status = await fetchStatus(track);
+    try { await db.collection('rooms').doc(currentRoom.id).collection('orders').doc(doc.id).update({ status: status }); } catch(e) {}
+    orders[0] = Object.assign({}, orders[0], { status: status, loading: false });
+    renderList();
+  } catch(e) { toast('오류가 발생했어요'); }
+}
+
+async function deleteOrder(id) {
+  if (!confirm('내 송장을 삭제할까요?')) return;
+  try {
+    await db.collection('rooms').doc(currentRoom.id).collection('orders').doc(id).delete();
+    orders = orders.filter(function(o) { return o.id !== id; });
+    renderList();
+    toast('삭제됐어요');
+  } catch(e) { toast('삭제 중 오류가 발생했어요'); }
+}
+
+function showErr(id, msg) {
+  var e = document.getElementById(id);
+  e.textContent = msg; e.style.display = 'block';
+}
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2300);
+}
+
+init();
+</script>
+</body>
+</html>
