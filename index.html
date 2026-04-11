@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>배송 공유</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f3ef;
+  --surface: #ffffff;
+  --border: #e3e1d9;
+  --text: #1a1917;
+  --muted: #7a7870;
+  --accent: #2d6a4f;
+  --accent-light: #e8f5ee;
+  --done-bg: #2d6a4f; --done-fg: #fff;
+  --during-bg: #e8f5ee; --during-fg: #1b4332;
+  --before-bg: #f0ede6; --before-fg: #5c5a54;
+  --danger: #991b1b;
+  --r: 12px; --rs: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:16px;font-weight:700;letter-spacing:-.5px;cursor:pointer;}
+.logo span{color:var(--accent);}
+.hbtn{font-size:13px;background:none;border:1px solid var(--border);border-radius:var(--rs);padding:6px 13px;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .15s;}
+.hbtn:hover{border-color:var(--text);color:var(--text);}
+
+/* ── PAGES ── */
+.page{display:none;max-width:640px;margin:0 auto;padding:36px 16px;}
+.page.active{display:block;}
+
+/* ── MAIN PAGE ── */
+.main-hero{text-align:center;padding:60px 0 40px;}
+.main-hero h1{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:10px;}
+.main-hero p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:32px;}
+.main-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{padding:11px 28px;background:var(--accent);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.btn-primary:hover{opacity:.85;}
+.btn-outline{padding:11px 28px;background:none;color:var(--text);border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+.main-desc{margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
+.desc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 16px;text-align:center;}
+.desc-card .icon{font-size:26px;margin-bottom:8px;}
+.desc-card h3{font-size:14px;font-weight:500;margin-bottom:4px;}
+.desc-card p{font-size:12px;color:var(--muted);line-height:1.6;}
+
+/* ── FORM CARD ── */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 20px;margin-bottom:16px;}
+.form-card h2{font-size:17px;font-weight:700;margin-bottom:4px;}
+.form-card .sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+.field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:14px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s;}
+.field input:focus{border-color:var(--accent);}
+.field-err{font-size:12px;color:var(--danger);margin-top:4px;display:none;}
+.field-hint{font-size:12px;color:var(--muted);margin-top:4px;}
+.form-card .full-btn{width:100%;padding:11px;margin-top:6px;}
+.url-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;font-size:13px;word-break:break-all;color:var(--accent);margin-bottom:12px;cursor:pointer;transition:background .15s;}
+.url-box:hover{background:var(--accent-light);}
+.copy-hint{font-size:12px;color:var(--muted);text-align:center;}
+
+/* ── LOCK PAGE ── */
+.lock-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.lock-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px 22px;width:100%;max-width:320px;}
+.lock-card h2{font-size:18px;font-weight:700;margin-bottom:4px;}
+.lock-card .sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.lock-err{font-size:13px;color:var(--danger);margin-top:10px;text-align:center;display:none;}
+
+/* ── ROOM PAGE ── */
+.room-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.room-title{font-size:19px;font-weight:700;letter-spacing:-.3px;}
+.room-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.share-row{background:var(--accent-light);border:1px solid #b7e0cb;border-radius:var(--rs);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:22px;cursor:pointer;transition:opacity .15s;}
+.share-row:hover{opacity:.85;}
+.share-row .share-label{font-size:13px;color:var(--accent);font-weight:500;}
+.share-row .share-url{font-size:12px;color:var(--accent);opacity:.7;word-break:break-all;}
+.share-icon{font-size:18px;flex-shrink:0;}
+
+/* 송장 추가 (방장만) */
+#addSection{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:18px;display:none;}
+#addSection h3{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:12px;}
+.add-row{display:flex;gap:8px;flex-wrap:wrap;}
+.add-row input,.add-row select{font-family:inherit;font-size:14px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s;}
+.add-row input:focus,.add-row select:focus{border-color:var(--accent);}
+.fi-name{flex:1;min-width:110px;}
+.fi-seller{flex:1;min-width:100px;}
+.fi-track{flex:1.2;min-width:130px;}
+.add-row .add-btn{padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.add-row .add-btn:hover{opacity:.85;}
+
+/* 목록 */
+.list-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.list-hd .ltitle{font-size:14px;font-weight:500;}
+.cnt{font-size:12px;background:var(--accent-light);color:var(--accent);padding:3px 10px;border-radius:20px;font-weight:500;margin-left:6px;}
+.refresh-btn{font-size:13px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:var(--rs);padding:5px 11px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent);}
+#orderList{display:flex;flex-direction:column;gap:9px;}
+
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;animation:fadeIn .22s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.oi{flex:1;min-width:0;}
+.o-name{font-size:15px;font-weight:500;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.o-seller{font-size:12px;color:var(--muted);margin-bottom:7px;}
+.steps-row{display:flex;align-items:center;}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.sline{flex:1;height:2px;background:var(--border);}
+.sdot.on{background:var(--accent);}
+.sline.on{background:var(--accent);}
+.pill{flex-shrink:0;font-size:12px;font-weight:500;padding:5px 11px;border-radius:20px;white-space:nowrap;}
+.p-before{background:var(--before-bg);color:var(--before-fg);}
+.p-during{background:var(--during-bg);color:var(--during-fg);}
+.p-done{background:var(--done-bg);color:var(--done-fg);}
+.del-btn{flex-shrink:0;background:none;border:none;cursor:pointer;color:#ccc;font-size:20px;padding:0 3px;line-height:1;border-radius:4px;transition:color .15s;}
+.del-btn:hover{color:var(--danger);}
+
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid rgba(0,0,0,.12);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px;}
+.p-done .spinner{border-color:rgba(255,255,255,.3);border-top-color:#fff;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;background:var(--surface);border:1px dashed var(--border);border-radius:var(--r);}
+.empty-icon{font-size:32px;margin-bottom:10px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:500;transition:transform .28s ease;z-index:300;pointer-events:none;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+
+@media(max-width:480px){.add-row{flex-direction:column;}.add-row .add-btn{width:100%;}.main-hero h1{font-size:22px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo" onclick="goMain()">배송 <span>공유</span></div>
+  <div id="headerRight"></div>
+</header>
+
+<!-- ① 메인 페이지 -->
+<div class="page active" id="pageMain">
+  <div class="main-hero">
+    <h1>📦 내 배송, 간편하게 공유</h1>
+    <p>공동구매 송장을 비밀번호로 보호된 링크로 공유하세요.<br>주소지 노출 없이 배송 상태만 안전하게 확인할 수 있어요.</p>
+    <div class="main-actions">
+      <button class="btn-primary" onclick="showPage('pageCreate')">공유방 만들기</button>
+      <button class="btn-outline" onclick="showPage('pageJoin')">링크로 접속하기</button>
+    </div>
+  </div>
+  <div class="main-desc">
+    <div class="desc-card"><div class="icon">🔐</div><h3>비밀번호 보호</h3><p>링크를 알아도 비밀번호 없이는 볼 수 없어요</p></div>
+    <div class="desc-card"><div class="icon">🙈</div><h3>주소 비공개</h3><p>배송 전·중·완료와 판매처만 표시돼요</p></div>
+    <div class="desc-card"><div class="icon">🔗</div><h3>링크 공유</h3><p>링크+비밀번호만 알면 누구나 조회 가능</p></div>
+  </div>
+</div>
+
+<!-- ② 방 만들기 -->
+<div class="page" id="pageCreate">
+  <div class="form-card">
+    <h2>공유방 만들기</h2>
+    <p class="sub">방 이름과 비밀번호를 설정하면 공유 링크가 생성돼요</p>
+    <div class="field">
+      <label>방 이름 (한글·영문, 최대 12자)</label>
+      <input type="text" id="cRoomName" placeholder="예: 3월공구, abc" maxlength="12"
+        oninput="this.value=this.value.replace(/[^가-힣a-zA-Z0-9]/g,'')"/>
+      <div class="field-err" id="cNameErr"></div>
+    </div>
+    <div class="field">
+      <label>비밀번호 (영문+숫자, 4~8자)</label>
+      <input type="password" id="cPw" placeholder="예: shop1234" maxlength="8"
+        oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
+        onkeydown="if(event.key==='Enter')createRoom()"/>
+      <div class="field-hint">친구들에게 이 비밀번호를 알려주세요</div>
+      <div class="field-err" id="cPwErr"></div>
+    </div>
+    <button class="btn-primary full-btn" onclick="createRoom()">방 만들기</button>
+  </div>
+
+  <!-- 생성 후 표시 -->
+  <div class="form-card" id="createdBox" style="display:none;">
+    <h2>✅ 공유방이 만들어졌어요!</h2>
+    <p class="sub">아래 링크를 복사해서 친구들에게 공유하세요</p>
+    <div class="url-box" id="createdUrl" onclick="copyUrl()"></div>
+    <p class="copy-hint">👆 탭하면 복사돼요 · 비밀번호도 함께 알려주세요</p>
+  </div>
+</div>
+
+<!-- ③ 링크로 접속 (직접 입력) -->
+<div class="page" id="pageJoin">
+  <div class="form-card">
+    <h2>링크로 접속하기</h2>
+    <p class="sub">방 이름과 비밀번호를 입력하세요</p>
+    <div class="field">
+      <label>방 이름</label>
+      <input type="text" id="jRoomName" placeholder="방 이름" maxlength="12"
+        oninput="this.value=this.value.replace(/[^가-힣a-zA-Z0-9]/g,'')"/>
+    </div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="jPw" placeholder="비밀번호" maxlength="8"
+        oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
+        onkeydown="if(event.key==='Enter')joinRoom()"/>
+    </div>
+    <div class="field-err" id="jErr" style="display:none;margin-bottom:8px;"></div>
+    <button class="btn-primary full-btn" onclick="joinRoom()">입장하기</button>
+  </div>
+</div>
+
+<!-- ④ 잠금 화면 (URL 접속 시) -->
+<div class="page" id="pageLock">
+  <div class="lock-wrap">
+    <div class="lock-card">
+      <h2>🔐 비밀번호 입력</h2>
+      <p class="sub" id="lockSub">이 공유방은 비밀번호로 보호돼 있어요</p>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="lockPw" placeholder="비밀번호" maxlength="8"
+          oninput="this.value=this.value.replace(/[^a-zA-Z0-9]/g,'')"
+          onkeydown="if(event.key==='Enter')submitLock()"/>
+      </div>
+      <button class="btn-primary full-btn" onclick="submitLock()">확인</button>
+      <div class="lock-err" id="lockErr">비밀번호가 틀렸어요. 메인으로 이동합니다...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ 방 내부 -->
+<div class="page" id="pageRoom">
+  <div class="room-header">
+    <div>
+      <div class="room-title" id="roomTitle"></div>
+      <div class="room-sub" id="roomSub">배송 현황</div>
+    </div>
+  </div>
+
+  <!-- 공유 URL 바 -->
+  <div class="share-row" onclick="copyRoomUrl()" title="탭해서 링크 복사">
+    <div>
+      <div class="share-label">🔗 이 링크를 친구들에게 공유하세요</div>
+      <div class="share-url" id="shareUrlText"></div>
+    </div>
+    <div class="share-icon">📋</div>
+  </div>
+
+  <!-- 방장만: 송장 추가 -->
+  <div id="addSection">
+    <h3>송장 추가 (방장 전용)</h3>
+    <div class="add-row">
+      <input type="text" class="fi-name" id="inputName" placeholder="주문 이름" />
+      <input type="text" class="fi-seller" id="inputSeller" placeholder="판매처 (선택)" />
+      <input type="text" class="fi-track" id="inputTrack" placeholder="운송장 번호" maxlength="14" inputmode="numeric"/>
+      <button class="add-btn" onclick="addOrder()">+ 추가</button>
+    </div>
+  </div>
+
+  <div class="list-hd">
+    <span class="ltitle">배송 목록 <span class="cnt" id="cntBadge">0</span></span>
+    <button class="refresh-btn" onclick="refreshAll()">새로고침</button>
+  </div>
+  <div id="orderList">
+    <div class="empty"><div class="empty-icon">📭</div>불러오는 중...</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// Firebase 설정
+// ═══════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBglu3qoZ3U_5d6RND_6Lx6XZgPWhmN6lY",
+  authDomain:        "caligo2.firebaseapp.com",
+  projectId:         "caligo2",
+  storageBucket:     "caligo2.firebasestorage.app",
+  messagingSenderId: "567781917671",
+  appId:             "1:567781917671:web:694635c7b88c10d490f342"
+};
+firebase.initializeApp(FIREBASE_CONFIG);
+const db = firebase.firestore();
+
+// ── 상태 ────────────────────────────────────
+let currentRoom = null; // { id, name, pw }
+let isOwner = false;
+let orders = [];
+let pendingRoomId = null; // URL로 접속 시 대기 중인 방 ID
+
+// ── URL 파싱 → 방 ID 있으면 잠금 화면 ────────
+function init() {
+  const hash = location.hash.replace('#','');
+  if (hash) {
+    pendingRoomId = decodeURIComponent(hash);
+    document.getElementById('lockSub').textContent = `"${pendingRoomId}" 공유방에 입장하려면 비밀번호를 입력하세요`;
+    showPage('pageLock');
+  } else {
+    showPage('pageMain');
+  }
+  renderHeaderRight();
+}
+
+// ── 페이지 전환 ──────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goMain() {
+  currentRoom = null; isOwner = false; orders = [];
+  history.replaceState(null,'',location.pathname);
+  showPage('pageMain');
+  renderHeaderRight();
+}
+
+function renderHeaderRight() {
+  const el = document.getElementById('headerRight');
+  if (currentRoom) {
+    el.innerHTML = `<button class="hbtn" onclick="goMain()">나가기</button>`;
+  } else {
+    el.innerHTML = `<button class="hbtn" onclick="showPage('pageCreate')">방 만들기</button>`;
+  }
+}
+
+// ── 방 만들기 ────────────────────────────────
+async function createRoom() {
+  const name = document.getElementById('cRoomName').value.trim();
+  const pw   = document.getElementById('cPw').value;
+  document.getElementById('cNameErr').style.display = 'none';
+  document.getElementById('cPwErr').style.display = 'none';
+
+  if (!name) { showErr('cNameErr','방 이름을 입력해주세요'); return; }
+  if (!/^[가-힣a-zA-Z0-9]{1,12}$/.test(name)) { showErr('cNameErr','한글·영문·숫자만 가능해요 (최대 12자)'); return; }
+  if (!/^[a-zA-Z0-9]{4,8}$/.test(pw)) { showErr('cPwErr','영문+숫자 4~8자로 입력해주세요'); return; }
+
+  // 중복 확인
+  const snap = await db.collection('rooms').doc(name).get();
+  if (snap.exists) { showErr('cNameErr','이미 있는 방 이름이에요. 다른 이름을 사용해주세요'); return; }
+
+  await db.collection('rooms').doc(name).set({
+    name, pw,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  const url = makeUrl(name);
+  document.getElementById('createdUrl').textContent = url;
+  document.getElementById('createdBox').style.display = 'block';
+
+  // 방장으로 바로 입장
+  currentRoom = { id: name, name, pw };
+  isOwner = true;
+  history.replaceState(null,'',`${location.pathname}#${encodeURIComponent(name)}`);
+  toast('방이 만들어졌어요! 아래 링크를 공유하세요 🎉');
+}
+
+function makeUrl(roomId) {
+  return `${location.origin}${location.pathname}#${encodeURIComponent(roomId)}`;
+}
+function copyUrl() {
+  const url = document.getElementById('createdUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => toast('링크가 복사됐어요!'));
+}
+function copyRoomUrl() {
+  navigator.clipboard.writeText(makeUrl(currentRoom.id)).then(() => toast('링크가 복사됐어요!'));
+}
+
+// ── 직접 접속 (pageJoin) ─────────────────────
+async function joinRoom() {
+  const name = document.getElementById('jRoomName').value.trim();
+  const pw   = document.getElementById('jPw').value;
+  const errEl = document.getElementById('jErr');
+  errEl.style.display = 'none';
+
+  if (!name || !pw) { errEl.textContent='방 이름과 비밀번호를 모두 입력해주세요'; errEl.style.display='block'; return; }
+
+  const ok = await verifyRoom(name, pw);
+  if (ok === 'ok') {
+    enterRoom(name, pw, false);
+  } else if (ok === 'wrong_pw') {
+    errEl.textContent = '비밀번호가 틀렸어요'; errEl.style.display='block';
+  } else {
+    errEl.textContent = '존재하지 않는 방이에요'; errEl.style.display='block';
+  }
+}
+
+// ── 잠금 화면 제출 ───────────────────────────
+async function submitLock() {
+  const pw = document.getElementById('lockPw').value;
+  const errEl = document.getElementById('lockErr');
+  errEl.style.display='none';
+  if (!pw) return;
+
+  const ok = await verifyRoom(pendingRoomId, pw);
+  if (ok === 'ok') {
+    enterRoom(pendingRoomId, pw, false);
+  } else {
+    errEl.style.display='block';
+    setTimeout(() => { errEl.style.display='none'; goMain(); }, 2000);
+  }
+}
+
+// ── 방 비밀번호 확인 ─────────────────────────
+async function verifyRoom(roomId, pw) {
+  try {
+    const snap = await db.collection('rooms').doc(roomId).get();
+    if (!snap.exists) return 'not_found';
+    return snap.data().pw === pw ? 'ok' : 'wrong_pw';
+  } catch { return 'error'; }
+}
+
+// ── 방 입장 ──────────────────────────────────
+function enterRoom(roomId, pw, owner) {
+  currentRoom = { id: roomId, name: roomId, pw };
+  isOwner = owner;
+  history.replaceState(null,'',`${location.pathname}#${encodeURIComponent(roomId)}`);
+
+  document.getElementById('roomTitle').textContent = '📦 ' + roomId;
+  document.getElementById('shareUrlText').textContent = makeUrl(roomId);
+  document.getElementById('addSection').style.display = isOwner ? 'block' : 'none';
+
+  // 방장 여부: 비밀번호를 입력해서 직접 만든 방이면 방장
+  // 여기서는 방 생성자 = 방장으로 단순 처리
+  // (실제로는 방 데이터에 ownerPw 저장해두고 비교)
+  checkOwnership(roomId, pw);
+
+  renderHeaderRight();
+  showPage('pageRoom');
+  loadOrders();
+}
+
+async function checkOwnership(roomId, pw) {
+  // 방 만들 때 같은 비밀번호를 쓰므로, 방장 여부는 세션스토리지로 구분
+  const ownerKey = `owner_${roomId}`;
+  if (sessionStorage.getItem(ownerKey) === pw) {
+    isOwner = true;
+  } else {
+    isOwner = false;
+  }
+  document.getElementById('addSection').style.display = isOwner ? 'block' : 'none';
+}
+
+// createRoom 시 방장 마킹
+async function createRoom() {
+  const name = document.getElementById('cRoomName').value.trim();
+  const pw   = document.getElementById('cPw').value;
+  document.getElementById('cNameErr').style.display='none';
+  document.getElementById('cPwErr').style.display='none';
+
+  if (!name) { showErr('cNameErr','방 이름을 입력해주세요'); return; }
+  if (!/^[가-힣a-zA-Z0-9]{1,12}$/.test(name)) { showErr('cNameErr','한글·영문·숫자만 가능해요 (최대 12자)'); return; }
+  if (!/^[a-zA-Z0-9]{4,8}$/.test(pw)) { showErr('cPwErr','영문+숫자 4~8자로 입력해주세요'); return; }
+
+  const snap = await db.collection('rooms').doc(name).get();
+  if (snap.exists) { showErr('cNameErr','이미 있는 방 이름이에요'); return; }
+
+  await db.collection('rooms').doc(name).set({
+    name, pw, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  // 방장 마킹 (세션)
+  sessionStorage.setItem(`owner_${name}`, pw);
+
+  const url = makeUrl(name);
+  document.getElementById('createdUrl').textContent = url;
+  document.getElementById('createdBox').style.display = 'block';
+
+  currentRoom = { id: name, name, pw };
+  isOwner = true;
+  history.replaceState(null,'',`${location.pathname}#${encodeURIComponent(name)}`);
+
+  document.getElementById('roomTitle').textContent = '📦 ' + name;
+  document.getElementById('shareUrlText').textContent = url;
+  document.getElementById('addSection').style.display = 'block';
+  renderHeaderRight();
+  showPage('pageRoom');
+  loadOrders();
+  toast('방이 만들어졌어요! 링크를 공유하세요 🎉');
+}
+
+// ── 주문 목록 ────────────────────────────────
+async function loadOrders() {
+  document.getElementById('orderList').innerHTML =
+    `<div class="empty"><div class="empty-icon">⏳</div>불러오는 중...</div>`;
+  try {
+    const snap = await db.collection('rooms').doc(currentRoom.id)
+      .collection('orders').orderBy('createdAt','desc').get();
+    orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderList();
+    refreshAll();
+  } catch {
+    document.getElementById('orderList').innerHTML =
+      `<div class="empty"><div class="empty-icon">❌</div>불러오지 못했어요</div>`;
+  }
+}
+
+const LABEL = { before:'배송 전', during:'배송 중', done:'배송 완료' };
+const PILL  = { before:'p-before', during:'p-during', done:'p-done' };
+
+function stepsHtml(s) {
+  const n = s==='before'?0:s==='during'?1:2;
+  const d = i=>`<div class="sdot ${i<=n?'on':''}"></div>`;
+  const l = i=>`<div class="sline ${i<n?'on':''}"></div>`;
+  return `<div class="steps-row">${d(0)}${l(0)}${d(1)}${l(1)}${d(2)}</div>`;
+}
+
+function renderCard(o) {
+  const s = o.status||'before';
+  const sp = o.loading?`<span class="spinner"></span>`:'';
+  const seller = o.seller ? `<div class="o-seller">판매처: ${esc(o.seller)}</div>` : `<div class="o-seller" style="height:4px;"></div>`;
+  const del = isOwner
+    ? `<button class="del-btn" onclick="deleteOrder('${o.id}')" title="삭제">×</button>` : '';
+  return `
+    <div class="order-card" id="card-${o.id}">
+      <div class="oi">
+        <div class="o-name">${esc(o.name)}</div>
+        ${seller}
+        ${stepsHtml(s)}
+      </div>
+      <span class="pill ${PILL[s]}">${sp}${LABEL[s]}</span>
+      ${del}
+    </div>`;
+}
+
+function renderList() {
+  document.getElementById('cntBadge').textContent = orders.length;
+  const el = document.getElementById('orderList');
+  if (!orders.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>${isOwner?'송장을 추가해보세요':'아직 등록된 송장이 없어요'}</div>`;
+    return;
+  }
+  el.innerHTML = orders.map(renderCard).join('');
+}
+
+async function fetchStatus(trackNum) {
+  try {
+    const r = await fetch(`https://apis.tracker.delivery/carriers/kr.cjlogistics/tracks/${trackNum}`);
+    if (!r.ok) return 'before';
+    const d = await r.json();
+    const ev = d.events||[];
+    if (!ev.length) return 'before';
+    const code = parseInt(ev[ev.length-1]?.status?.code||'0');
+    if (code>=91) return 'done';
+    if (code>=30) return 'during';
+    return 'before';
+  } catch { return 'before'; }
+}
+
+async function refreshAll() {
+  if (!orders.length) return;
+  document.getElementById('roomSub').textContent = '조회 중...';
+  orders = orders.map(o=>({...o,loading:true}));
+  renderList();
+  orders = await Promise.all(orders.map(async o=>{
+    const status = await fetchStatus(o.trackNum);
+    if (status!==o.status) {
+      try { await db.collection('rooms').doc(currentRoom.id).collection('orders').doc(o.id).update({status}); } catch{}
+    }
+    return {...o,status,loading:false};
+  }));
+  renderList();
+  const now=new Date();
+  document.getElementById('roomSub').textContent =
+    `마지막 업데이트: ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+}
+
+async function addOrder() {
+  if (!isOwner) return;
+  const name   = document.getElementById('inputName').value.trim();
+  const seller = document.getElementById('inputSeller').value.trim();
+  const track  = document.getElementById('inputTrack').value.trim().replace(/\D/g,'');
+  if (!name)  { toast('주문 이름을 입력해주세요'); return; }
+  if (!/^\d{10,14}$/.test(track)) { toast('운송장 번호 확인해주세요 (10~14자리)'); return; }
+  try {
+    const doc = await db.collection('rooms').doc(currentRoom.id).collection('orders').add({
+      name, seller, trackNum: track, status:'before',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('inputName').value='';
+    document.getElementById('inputSeller').value='';
+    document.getElementById('inputTrack').value='';
+    const o={id:doc.id,name,seller,trackNum:track,status:'before',loading:true};
+    orders.unshift(o);
+    renderList();
+    toast('추가됐어요!');
+    const status=await fetchStatus(track);
+    try{ await db.collection('rooms').doc(currentRoom.id).collection('orders').doc(doc.id).update({status}); }catch{}
+    orders[0]={...orders[0],status,loading:false};
+    renderList();
+  } catch { toast('오류가 발생했어요'); }
+}
+
+async function deleteOrder(id) {
+  if (!isOwner) return;
+  if (!confirm('이 송장을 삭제할까요?')) return;
+  try {
+    await db.collection('rooms').doc(currentRoom.id).collection('orders').doc(id).delete();
+    orders=orders.filter(o=>o.id!==id);
+    renderList();
+    toast('삭제됐어요');
+  } catch { toast('삭제 중 오류가 발생했어요'); }
+}
+
+// ── 유틸 ─────────────────────────────────────
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toast(msg){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2300);}
+
+// ── 시작 ──────────────────────────────────────
+init();
+</script>
+</body>
+</html>
